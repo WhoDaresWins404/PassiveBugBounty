@@ -1,0 +1,22 @@
+            - name: Drift — Architectural Erosion Check
+  # You may pin to the exact commit or the version.
+  # uses: mick-gsk/drift@f7f62f66829a3ad3eebe7f5e050a678bcfa6c413
+  uses: mick-gsk/drift@v1.1.0
+  with:
+    # Path to the repository root to analyse.
+    repo: # optional, default is .
+    # Exit 1 if any finding is at or above this severity: critical | high | medium | low
+    fail-on: # optional, default is high
+    # Days of git history to consider for temporal signals.
+    since: # optional, default is 90
+    # Terminal output format: rich | json | sarif
+    format: # optional, default is rich
+    # Path to a drift.yaml config file (optional).
+    config: # optional, default is 
+    # Upload SARIF results to GitHub Code Scanning so findings appear as inline annotations on pull requests. Requires the 'security-events: write' permission.
+
+    upload-sarif: # optional, default is false
+    # pip install spec for drift-analyzer, e.g. 'drift-analyzer==0.2.0'. Defaults to the latest published release.
+
+    drift-version: # optional, default is drift-analyzer
+          
