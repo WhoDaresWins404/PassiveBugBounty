@@ -132,3 +132,15 @@ class SessionCorrelator:
                 await self.pool.enforce_ttl()
             except Exception as e:
                 print(f"⚠️ TTL Cleanup failed: {e}")
+
+if __name__ == "__main__":
+    print("🚀 Starting Session Correlator service...")
+    try:
+        correlator = SessionCorrelator()
+        asyncio.run(correlator.start())
+    except KeyboardInterrupt:
+        print("\n🛑 Session Correlator shutting down gracefully...")
+    except Exception as e:
+        print(f"🚨 Fatal error in Session Correlator: {e}")
+        import traceback
+        traceback.print_exc()

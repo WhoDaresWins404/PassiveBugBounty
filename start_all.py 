@@ -80,6 +80,20 @@ def wait_for_health(service, timeout=30):
             if check_http(service["health_target"]):
                 print("✅ Ready!")
                 return True
+        elif service["health_type"] == "log":
+            # Read the last few lines of the log file to check for the success message
+            try:
+                log_path = os.path.join(os.getcwd(), service["log_file"])
+                if os.path.exists(log_path):
+                    with open(log_path, "r", encoding="utf-8") as f:
+                        # Read the last 15 lines to catch the startup message
+                        lines = f.readlines()[-15:]
+                        if service["health_target"] in "".join(lines):
+                            print("✅ Ready!")
+                            return True
+            except Exception:
+                pass # File might be locked or not exist yet, keep waiting
+        
         time.sleep(1)
     
     print("❌ Timeout!")
