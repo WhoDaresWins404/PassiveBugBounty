@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""
+Unified Startup Orchestrator
+Starts all project components, performs health checks, and handles graceful shutdown.
+"""
+
+import subprocess
+import time
+import requests
+import sys
+import os
+import signal
+import socket
+
+# --- Configuration ---
+# Ensure PYTHONPATH is set for all child processes
+ENV = os.environ.copy()
+ENV["PYTHONPATH"] = os.getcwd()
+
+# Define the services to start
+SERVICES = [
+    {
+        "name": "Traffic Ingress (mitmdump)",
+        "cmd": ["mitmdump", "-s", "src/ingress/mitm_addon.py", "--set", "listen_port=5000", "-q"],
+        "health_type": "port",
+        "health_target": 5000,
+        "log_file": "logs/ingress.log"
+    },
+    {
+        "name": "Backend API (FastAPI)",
+        "cmd": ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"],
+        "health_type": "http",
+        "health_target": "http://localhost:8000/health",
+        "log_file": "logs/api.log"
+    },
+    {
+        "name": "Web UI (Streamlit)",
+        "cmd": ["streamlit", "run", "src/ui/dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0", "--browser.gatherUsageStats", "false"],
+        "health_type": "http",
+        "health_target": "http://localhost:8501/_stcore/health",
+        "log_file": "logs/ui.log"
+    }
+]
+
+processes = []
+
+def check_port(port):
+    """Check if a local port is open."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(1)
+        return s.connect_ex(('localhost', port)) == 0
+
+def check_http(url):
+    """Check if an HTTP endpoint returns 200 OK."""
+    try:
+        response = requests.get(url, timeout=2)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+def wait_for_health(service, timeout=30):
+    """Poll the health check until it passes or timeout is reached."""
+    start_time = time.time()
+    sys.stdout.write(f"  ⏳ Waiting for {service['name']}... ")
+    sys.stdout.flush()
+
+    while time.time() - start_time < timeout:
+        if service["health_type"] == "port":
+            if check_port(service["health_target"]):
+                print("✅ Ready!")
+                return True
+        elif service["health_type"] == "http":
+            if check_http(service["health_target"]):
+                print("✅ Ready!")
+                return True
+        time.sleep(1)
+    
+    print("❌ Timeout!")
+    return False
+
+def start_services():
+    """Start all defined services."""
+    print("🚀 Starting Passive Analyzer Components...\n")
+    
+    # Ensure logs directory exists
+    os.makedirs("logs", exist_ok=True)
+
+    for service in SERVICES:
+        print(f"▶️  Starting {service['name']}...")
+        
+        # Open log file for output
+        log_path = os.path.join(os.getcwd(), service["log_file"])
+        log_file = open(log_path, "w")
+        
+        # Start the process
+        process = subprocess.Popen(
+            service["cmd"],
+            env=ENV,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        processes.append((service["name"], process, log_file))
+        
+        # Wait for it to become healthy
+        if not wait_for_health(service):
+            print(f"🚨 ERROR: {service['name']} failed to start. Check {service['log_file']}")
+            shutdown_services()
+            sys.exit(1)
+
+    print("\n" + "="*50)
+    print("🎉 ALL SYSTEMS OPERATIONAL!")
+    print("="*50)
+    print("🌐 Web UI Dashboard:  http://localhost:8501")
+    print("🔌 API Swagger Docs:  http://localhost:8000/docs")
+    print("🛡️  Proxy Ingress:     http://localhost:5000")
+    print("\nPress Ctrl+C to shut down all components gracefully.\n")
+
+def shutdown_services(signum=None, frame=None):
+    """Gracefully terminate all child processes."""
+    print("\n\n🛑 Shutting down all components...")
+    for name, process, log_file in processes:
+        if process.poll() is None: # If still running
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+            print(f"  ⏹️  Stopped {name}")
+        log_file.close()
+    
+    print("👋 All services terminated. Goodbye!\n")
+    sys.exit(0)
+
+if __name__ == "__main__":
+    # Register the shutdown function for Ctrl+C (SIGINT)
+    signal.signal(signal.SIGINT, shutdown_services)
+    
+    try:
+        start_services()
+        # Keep the main thread alive
+        while True:
+            time.sleep(1)
+    except Exception as e:
+        print(f"🚨 Fatal error in orchestrator: {e}")
+        shutdown_services()
