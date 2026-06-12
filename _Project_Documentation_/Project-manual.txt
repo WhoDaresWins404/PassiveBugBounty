@@ -1,0 +1,8 @@
+
+How We Will Work Together Moving Forward
+
+How to use it:
+Save this script as generate_ai_context.py in the root directory of your project.
+Create a file named ROADMAP_STATUS.md in the same root directory (I've provided a template below the script).
+Run the script: python generate_ai_context.py
+It will generate an AI_CONTEXT.md file. You can then upload this file to our chat whenever we need to discuss architecture, debug, or plan the next phase.
