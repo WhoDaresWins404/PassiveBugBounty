@@ -1,9 +1,8 @@
 """
 Traffic Ingress Module (mitmproxy Addon)
-Intercepts HTTP/HTTPS traffic, filters by allowed targets, extracts metadata,
-and pushes it to the Redis queue for the Session Correlator.
 """
-
+import sys
+import os
 import asyncio
 import json
 import uuid
@@ -13,9 +12,19 @@ from typing import Optional
 import redis.asyncio as redis
 from mitmproxy import http, ctx
 
-# Import our centralized configuration
-# Ensure your Python path is set correctly when running mitmproxy
+# --- DYNAMIC PATH RESOLUTION ---
+# Get the directory of this current file (src/ingress/)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Go up two levels to get the project root
+project_root = os.path.abspath(os.path.join(current_dir, "../.."))
+
+# Add project root to sys.path if it's not already there
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Now the import will work perfectly
 from src.config import settings
+# --------------------------------
 
 class TrafficIngressAddon:
     def __init__(self):
