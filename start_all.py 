@@ -33,20 +33,21 @@ SERVICES = [
         "health_target": "http://localhost:8000/health",
         "log_file": "logs/api.log"
     },
+        {
+        "name": "Session Correlator",
+        "cmd": ["python", "-m", "src.correlator.session_builder"],
+        "health_type": "log", # We'll check the log file for the success message
+        "health_target": "✅ Session Correlator connected to Redis and PostgreSQL.",
+        "log_file": "logs/correlator.log"
+    },
     {
         "name": "Web UI (Streamlit)",
         "cmd": ["streamlit", "run", "src/ui/dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0", "--browser.gatherUsageStats", "false"],
         "health_type": "http",
         "health_target": "http://localhost:8501/_stcore/health",
         "log_file": "logs/ui.log"
-    },
-    {
-        "name": "Session Correlator",
-        "cmd": ["python", "-m", "src.correlator.session_builder"],
-        "health_type": "log", # We'll check the log file for the success message
-        "health_target": "✅ Session Correlator connected to Redis and PostgreSQL.",
-        "log_file": "logs/correlator.log"
     }
+
 ]
 
 processes = []
