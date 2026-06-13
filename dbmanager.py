@@ -23,12 +23,11 @@ class Severity:
 
 
 class DatabaseManager:
+    """
+    Placeholder manager for the database; session binding is handled by SQLAlchemy/Flask-SQLAlchemy.
+    """
     def __init__(self):
         pass
-
-    def get_session(self):
-        return None
-
 
 def init_db():
     dbmanager.create_all()
