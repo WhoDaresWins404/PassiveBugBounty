@@ -6,9 +6,9 @@ dbmanager = SQLAlchemy()
 
 class Finding(dbmanager.Model):
     __tablename__ = "findings"
-    id = dbmanager.Column(sa.Integer, primary_key=True)
-    title = dbmanager.Column(sa.String)
-    severity = dbmanager.Column(sa.Enum("low", "medium", "high"), nullable=False)
+    id = dbmanager.Column(dbmanager.Integer, primary_key=True)
+    title = dbmanager.Column(dbmanager.String)
+    severity = dbmanager.Column(dbmanager.Enum("low", "medium", "high"), nullable=False)
 
 
 class Severity:
