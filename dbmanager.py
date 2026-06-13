@@ -29,10 +29,6 @@ class DatabaseManager:
     def __init__(self):
         pass
 
-    def get_session(self):
-        # Return a callable so patches can bind directly to it instead of its .return_value attribute
-        return lambda: None
-
 
 def init_db():
     dbmanager.create_all()
