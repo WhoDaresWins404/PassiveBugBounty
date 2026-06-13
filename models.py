@@ -2,6 +2,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+
 @dataclass
 class Finding:
     id: int
@@ -16,6 +17,7 @@ class ScanStatus:
 
 DB_FILE = "scan_data.db"
 
+
 def init_db():
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
@@ -24,15 +26,16 @@ def init_db():
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             status TEXT,
                             progress INTEGER
-                         )""")
+                         )''')
         # Create findings table linked by scan_job_id
         cursor.execute('''CREATE TABLE IF NOT EXISTS findings (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             scan_job_id INTEGER,
                             severity TEXT,
                             details TEXT
-                         )""")
+                         )''')
         conn.commit()
+
 
 def get_latest_results():
     with sqlite3.connect(DB_FILE) as conn:
@@ -46,7 +49,7 @@ def get_latest_results():
         findings_rows = cursor.execute(
             "SELECT id, severity, details FROM findings WHERE scan_job_id = ?", (job[0],)
         ).fetchall()
-    
+
     # Seed mock data if the table is empty so the UI still shows something useful today
     if not findings_rows:
         cursor.execute("INSERT INTO findings VALUES ((SELECT COALESCE(MAX(scan_job_id), 1)), 'High', 'Sample bug description (mock)')")
