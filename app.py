@@ -35,9 +35,9 @@ session = db.get_session()
 findings = session.query(Finding).all()
 risk = sum(f.severity.get_weight() for f in findings)
 
-return jsonify({
+ return jsonify({
     "summary": {"total": len(findings), "risk": risk},
-    "issues": [{"title": i, "level": str(s)} for i, s in zip((f.title for f in findings), (f.severity for f in findings))]),
+    "issues": [{"title": i, "level": str(s)} for i, s in zip((f.title for f in findings), (f.severity for f in findings))],
 })
 
 
