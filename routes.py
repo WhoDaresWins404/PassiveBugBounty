@@ -1,26 +1,15 @@
-from flask import jsonify
-from dataclasses import asdict
-import models
+from flask import Flask
+import routes  # This imports the new route definitions from routes.py
 
 
-def get_status():
-    result = models.get_latest_results()
-    if not result:
-        return {"progress": 0, "message": "No recent scan found"}, 404
-    return {
-        "progress": result.progress_pct,
-        "message": result.status_message
-    }
+def create_app():
+    app = Flask(__name__)
 
+    # The lines below replace any old manual route definitions in this file
+    app.add_url_rule('/status', view_func=routes.get_status, methods=['GET'])
+    app.add_url_rule('/results', view_func=routes.get_results, methods=['GET'])
 
-def get_results():
-    result = models.get_latest_results()
-    if not result:
-        return {"error": "No scan results to display"}, 404
+    return app
 
-    findings = [asdict(finding) for finding in result.findings]
-    return {
-        "status": result.status_message,
-        "progress": result.progress_pct,
-        "findings": findings
-    }
+if __name__ == "__main__":
+    create_app().run(host="127.0.0.1", port=5000)
