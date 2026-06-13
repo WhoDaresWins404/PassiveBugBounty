@@ -1,13 +1,13 @@
-import enum
-from sqlalchemy import Column, Integer, String, Enum as SaEnum, ForeignKey, DateTime
+from enum import Enum
+from sqlalchemy import Column, Integer, String, Enum as SaEnum, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import sessionmaker
 
 
 Base = declarative_base()
 
 
-class Severity(enum.Enum):
+class Severity(Enum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
@@ -17,17 +17,17 @@ class Severity(enum.Enum):
         return weights.get(self)
 
 
-class Scan(dbmanager.Base):
+class Scan(Base):
     __tablename__ = "scans"
     id = Column(Integer, primary_key=True)
     name = Column(String))
 
 
-class Finding(dbmanager.Base):
+class Finding(Base):
     __tablename__ = "findings"
     id = Column(Integer, primary_key=True)
     scan_id = Column(Integer)
-    severity = Column(Enum[Severity]))
+    severity = Column(SaEnum(Severity))
     title = Column(String))
     description = Column(String))
 
@@ -37,5 +37,7 @@ class DatabaseManager:
 def get_session(self):
     return session
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+engine = create_engine("sqlite:///scans.db")
+
+def init_db():
+    Base.metadata.create_all(bind=engine)

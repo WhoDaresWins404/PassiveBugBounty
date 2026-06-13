@@ -1,23 +1,45 @@
-from Flask import Flask, jsonify
-from dbmanager import DatabaseManager
+from flask import Flask, jsonify
+import sys
+
+
+def run():
+"""Starts the server after running internal tests."""
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    print("Running system self-tests...")
+    try:
+        from scanger import test
+        test()
+        from dbmanager import init_db
+        init_db()
+        print("All systems green.")
+    except Exception as e:
+        print(f"TEST FAILED: {e}")
+        sys.exit(1)
 
 app = Flask(__name__)
 
 
-@app.route('/status')
-def get_report():
-    dbmanager = DatabaseManager()
-    session = dbmanager.get_session()
+@app.route("/health")
+def health():
+"""Endpoint for the Ubuntu watchdog to verify service status."""
+return jsonify({"status": "ok", "service": "bug-scanner-web"}), 200
 
-    findings = session.query(Finding).all()
-    weighted_score = sum(f.severity.get_weight() for f in findings)
 
-    return jsonify({
-        "total_issues": len(findings),
-        "risk_index": weighted_score,
-        "details": [{"id": i, "title": t} for i,t in [(f.id, f.title) for f in findings]]
-    })
+@app.route("/report")
+def report():
+from dbmanager import DatabaseManager
+
+db = DatabaseManager()
+session = db.get_session()
+
+findings = session.query(Finding).all()
+risk = sum(f.severity.get_weight() for f in findings)
+
+return jsonify({
+    "summary": {"total": len(findings), "risk": risk},
+    "issues": [{"title": i, "level": str(s)} for i, s in zip((f.title for f in findings), (f.severity for f in findings))]),
+})
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+app.run(host="0.0.0.0", port=8000)
