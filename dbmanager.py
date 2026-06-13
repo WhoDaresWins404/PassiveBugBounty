@@ -22,14 +22,5 @@ class Severity:
         return weights.get(severity, 20)
 
 
-class DatabaseManager:
-    def __init__(self):
-        # Use the default SQLite URI directly instead of reading from dbmanager.config
-        pass
-
-    def get_session(self):
-        return dbmanager.sessionmaker().bind()
-
-
 def init_db():
     dbmanager.create_all()
