@@ -24,7 +24,8 @@ class Severity:
 
 class DatabaseManager:
     def __init__(self):
-        if not dbmanager.config.get("SQLALCHEMY_DATABASE_URI"):
+        uri = dbmanager.config.get("SQLALCHEMY_DATABASE_URI")
+        if not uri:
             dbmanager.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bugscan.db"
 
     def get_session(self):
