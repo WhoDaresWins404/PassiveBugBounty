@@ -5,6 +5,10 @@ from database import dbmanager
 app = Flask(__name__)
 
 
+@app.route("/")
+def index():
+    return redirect(url_for("dashboard"))
+
 @app.route("/status/<job_id>", methods=["GET"])
 def get_scan_status(job_id):
     # Mock status for now - replace with real job lookup in the worker queue
