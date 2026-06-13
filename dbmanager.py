@@ -22,12 +22,18 @@ class Severity:
         return weights.get(severity, 20)
 
 
+class MockSession:
+    """Fake session object for mocked imports."""
+    commit = lambda self: None
+    rollback = lambda self: None
+
+
 class DatabaseManager:
-    """
-    Placeholder manager for the database; session binding is handled by SQLAlchemy/Flask-SQLAlchemy.
-    """
     def __init__(self):
         pass
+
+    def get_session(self):
+        return MockSession()
 
 
 def init_db():
