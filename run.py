@@ -1,11 +1,26 @@
-from src.db import init_db
-from src.ui import app
+import subprocess
+import os
+from flask import Flask, render_template
 
 
-def main():
-    init_db()
-    app.run(host="127.0.0.1", port=5000)
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Traffic Analyzer Web UI"
+
+
+def start_mitmproxy():
+    """Starts mitmproxy in the background on all interfaces."""
+    # We force bind to 0.0.0.0 so it is reachable from your Windows machine
+    cmd = [
+        'mitmproxy',
+        '-s', 'src.proxy',
+        '--set', 'mitmproxy_bind_address=0.0.0.0'
+    ]
+    subprocess.Popen(cmd, stdout=None, stderr=None)
 
 
 if __name__ == "__main__":
-    main()
+    start_mitmproxy()
+    app.run(host='0.0.0.0', port=5000)
