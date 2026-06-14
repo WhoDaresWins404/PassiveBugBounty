@@ -14,9 +14,9 @@ def start_mitmproxy():
     """Starts mitmproxy in the background on all interfaces."""
     cmd = [
         'mitmproxy',
-        '-s', 'src.mitm_plugin',
+        '-s', 'src/mitm_plugin.py',  # Use file path instead of module string
         '--set', 'mitmproxy_bind_address=0.0.0.0',
-        '--listen-port', '8080'  # Explicitly bind to 8080 on all interfaces
+        '--listen-port', '8080'
     ]
     subprocess.Popen(cmd, stdout=None, stderr=None)
 
