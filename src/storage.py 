@@ -1,0 +1,23 @@
+import sqlite3
+
+def init_db():
+    with sqlite3.connect("traffic.db") as conn:
+        # Unstructured dump for everything
+        conn.execute("""CREATE TABLE IF NOT EXISTS raw_endpoints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            url TEXT, method TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)""")
+        
+        # Classified tables for the analyst's workflow
+        categories = ["sqli", "xss", "path_traversal", "cmdi"]
+        for cat in categories:
+            conn.execute(f"CREATE TABLE IF NOT EXISTS {cat} (id INTEGER, url TEXT)")
+
+def save_endpoint(url, method, category=None):
+    with sqlite3.connect("traffic.db") as conn:
+        conn.execute("INSERT INTO raw_endpoints (url, method) VALUES (?, ?)", (url, method))
+        if category and category in ["sqli", "xss", "path_traversal", "cmdi"]:
+            conn.execute(f"INSERT INTO {category} (url) VALUES (?)", (url,))
+
+def get_all_endpoints():
+    with sqlite3.connect("traffic.db") as conn:
+        return conn.execute("SELECT id, url FROM raw_endpoints").fetchall()

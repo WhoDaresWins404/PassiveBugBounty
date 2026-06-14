@@ -1,10 +1,12 @@
 from mitmproxy import http
+from .storage import save_endpoint
 
 def endpoint_analyzer(flow):
-    """
-    Mitmproxy plugin for traffic analysis.
-    This is where we will implement anomaly detection, error checking, 
-    and vulnerability scanning (SQLi, XSS, etc.).
-    """
-    # Placeholder: in the next phase we'll add logic to classify and store endpoints
-    pass
+    # Placeholder logic: in production, regex/signature matching goes here
+    category = None
+    if "select" in flow.request.path and "1=1" in flow.request.query:
+        category = "sqli"
+    elif "/etc/passwd" in flow.request.path:
+        category = "path_traversal"
+
+    save_endpoint(flow.request.url, flow.request.method, category)

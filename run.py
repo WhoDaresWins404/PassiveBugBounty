@@ -1,26 +1,13 @@
-import subprocess
-from flask import Flask
-from src.mitm_plugin import endpoint_analyzer
-
+from flask import Flask, render_template # Assuming a simple index.html template
+from src.storage import init_db, get_all_endpoints
 
 app = Flask(__name__)
 
 @app.route('/')
-def index():
-    return "Traffic Analyzer Web UI"
-
-
-def start_mitmproxy():
-    """Starts mitmproxy in the background on all interfaces."""
-    cmd = [
-        'mitmproxy',
-        '-s', 'src/mitm_plugin.py',  # Use file path instead of module string
-        '--set', 'mitmproxy_bind_address=0.0.0.0',
-        '--listen-port', '8080'
-    ]
-    subprocess.Popen(cmd, stdout=None, stderr=None)
-
+def dashboard():
+    data = get_all_endpoints()
+    return f"<h1>Traffic Analyzer Dashboard</h1><p>Total endpoints captured: {len(data)}</p>"
 
 if __name__ == "__main__":
-    start_mitmproxy()
+    init_db()  # Ensure tables exist on startup
     app.run(host='0.0.0.0', port=5000)
