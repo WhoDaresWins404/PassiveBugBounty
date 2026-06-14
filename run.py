@@ -1,6 +1,6 @@
 import subprocess
 from flask import Flask
-from src.mitm_plugin import endpoint_analyzer  # Import from our new module
+from src.mitm_plugin import endpoint_analyzer
 
 
 app = Flask(__name__)
@@ -14,8 +14,9 @@ def start_mitmproxy():
     """Starts mitmproxy in the background on all interfaces."""
     cmd = [
         'mitmproxy',
-        '-s', 'src.mitm_plugin',  # Point to our module instead of a script file
-        '--set', 'mitmproxy_bind_address=0.0.0.0'
+        '-s', 'src.mitm_plugin',
+        '--set', 'mitmproxy_bind_address=0.0.0.0',
+        '--listen-port', '8080'  # Explicitly bind to 8080 on all interfaces
     ]
     subprocess.Popen(cmd, stdout=None, stderr=None)
 
